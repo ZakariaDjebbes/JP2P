@@ -1,0 +1,6 @@
+{
+  "master_peer": {
+    "host": "localhost",
+    "port": "6523"
+  }
+}
