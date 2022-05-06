@@ -1,49 +1,43 @@
 package com.jp2p.tui;
 
+import com.jp2p.configuration.ConfigurationReader;
 import com.jp2p.core.peer.Peer;
 import com.jp2p.core.peer.PeerRunner;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.Socket;
 import java.util.Random;
 import java.util.Scanner;
 
+@SuppressWarnings("InfiniteLoopStatement")
 public class CommandLineInterface {
+    public static PeerRunner peer;
+
     public static void main(String[] args) {
-        Startup(args);
+        try {
+            peer = PeerRunner.Startup();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        new Thread(peer).start();
+        runCommandLineInterface();
     }
 
-    private static void Startup(String[] args) {
-        try {
-            String peerName = args[0] + new Random().nextInt(15000);
-            PeerRunner peer = new PeerRunner(peerName, new Random().nextInt(1026, 65535), 10);
-            new Thread(peer).start();
-            Thread.sleep(1000);
-
-            System.out.println("""
-                    List of commands (type help to see it again or clear to clear)
-                    1 - name [hostname] [port number]
-                    2 - knownPeers [hostname] [port number]
-                    3 - itsMe [hostname] [port number]
-                    4 - file [fileName.ext] [bounces]
-                    5 - download [fileName.ext] [bounces]
-                    6 - bye [hostname] [port number]
-                    """);
-
-            while (true) {
-                System.out.printf("%s>", peer.getName());
-                String userCommand = new Scanner(System.in).nextLine();
-                invokeCommand(userCommand, peer);
+    private static void runCommandLineInterface() {
+        while (true) {
+            System.out.printf("%s>", peer.getName());
+            String userCommand = new Scanner(System.in).nextLine();
+            try {
+                invokeCommand(userCommand);
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
             }
-        } catch (IOException | ClassNotFoundException | InterruptedException e) {
-            e.printStackTrace();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("Expecting the name of the peer as an argument which was not found.");
         }
     }
 
-    public static void invokeCommand(String command, PeerRunner peer) throws IOException, ClassNotFoundException, InterruptedException {
+    private static void invokeCommand(String command) throws IOException, ClassNotFoundException {
         String[] args = command.split(" ");
         try {
             switch (args[0]) {
@@ -107,8 +101,8 @@ public class CommandLineInterface {
                     int bounces = Integer.parseInt(args[2]);
 
                     try {
-                        byte[] res = peer.sendDownload(fileName, bounces);
-                        System.out.println("Downloaded a total of " + res.length + " bytes of data and saved them.");
+                        long res = peer.sendDownload(fileName, bounces);
+                        System.out.println("Downloaded a total of " + res + " bytes of data and saved them.");
                     } catch (FileNotFoundException e) {
                         System.out.println("File not found.");
                     }

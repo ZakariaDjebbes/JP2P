@@ -1,0 +1,7 @@
+{
+  "default_peer": {
+    "port": 45673,
+    "max_peers": 10,
+    "name": "myPeer"
+  }
+}

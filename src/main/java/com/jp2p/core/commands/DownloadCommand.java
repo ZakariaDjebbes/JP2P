@@ -2,31 +2,32 @@ package com.jp2p.core.commands;
 
 import com.jp2p.core.file.FileManager;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 
 public record DownloadCommand(FileManager fileManager) implements ICommand{
-
     @Override
     public Object execute(Object... args) {
         String fileName = (String)args[0];
         ObjectOutputStream out = (ObjectOutputStream) args[1];
 
         try {
-            byte[] data = fileManager.getBytes(fileName);
-            out.writeInt(data.length);
-            out.write(data);
-
-//            for (byte b : data) {
-//                out.write(b);
-//            }
-
+            File file = fileManager.getFile(fileName);
+            out.writeLong(file.length());
             out.flush();
-        }catch (FileNotFoundException e){
+
+            BufferedInputStream stream = fileManager.getAsInStream(fileName);
+            int read;
+            byte[] bytes = new byte[2048];
+
+            while ((read = stream.read(bytes)) > 0) {
+                out.write(bytes, 0, read);
+                out.flush();
+            }
+
+            stream.close();
+        } catch (FileNotFoundException e){
             return "File not found";
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             return "Error reading file";
         }
 

@@ -1,18 +1,19 @@
 package com.jp2p.core.peer;
 
+import com.jp2p.configuration.ConfigurationReader;
 import com.jp2p.core.file.FileManager;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
+import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@SuppressWarnings("InfiniteLoopStatement")
 public class PeerRunner implements Runnable {
     public static final String PEER_FILE_PATH = "./files/";
     public static final String PEER_DOWNLOADS_PATH = "./downloads/";
@@ -20,13 +21,13 @@ public class PeerRunner implements Runnable {
     private final UUID peerId;
     private final int port;
     private final ServerSocket socket;
-    private final ExecutorService executor;
-    private String name;
+    private final ExecutorService slavePool;
+    private final String name;
     private final PeerContainer peerContainer;
     private final FileManager filesManager;
     private final FileManager downloadsManager;
 
-    public PeerRunner(String name, int port, int maxPeers) throws IOException {
+    private PeerRunner(String name, int port, int maxPeers) throws IOException {
         this.name = name;
         this.port = port;
         this.peerContainer = new PeerContainer(maxPeers);
@@ -35,7 +36,26 @@ public class PeerRunner implements Runnable {
         this.downloadsManager = new FileManager(PEER_DOWNLOADS_PATH);
 
         this.socket = new ServerSocket(port);
-        this.executor = Executors.newFixedThreadPool(MAX_THREADS);
+        this.slavePool = Executors.newFixedThreadPool(MAX_THREADS);
+    }
+
+    public static PeerRunner Startup() throws IOException {
+        PeerRunner peer;
+        String peerName = ConfigurationReader.GetNode("default_peer", "name");
+        int maxPeers = Integer.parseInt(ConfigurationReader.GetNode("default_peer", "max_peers"));
+        int defaultPort = Integer.parseInt(ConfigurationReader.GetNode("default_peer", "port"));
+
+        try {
+
+            peer = new PeerRunner(peerName, defaultPort , maxPeers);
+            System.out.println("Because this is the first peer, It will always run on port " + defaultPort + " Go to the configuration file to change the default port.");
+        } catch (BindException e) {
+            System.out.print("Choose a port for this peer: ");
+            int port = new Scanner(System.in).nextInt();
+            peer = new PeerRunner(peerName, port , maxPeers);
+        }
+
+        return peer;
     }
 
     @Override
@@ -43,15 +63,11 @@ public class PeerRunner implements Runnable {
         System.out.printf("Peer [%s] with id [%s] up and listening for other peers on port [%s]...%n", name, peerId, port);
         try {
             while (true) {
-                this.executor.execute(new PeerTask(socket.accept(), this));
+                this.slavePool.execute(new PeerTask(socket.accept(), this));
             }
         } catch (IOException E) {
             E.printStackTrace();
         }
-    }
-
-    public void stop() throws IOException {
-        socket.close();
     }
 
     public String sendGetName(Socket socket) throws IOException, ClassNotFoundException {
@@ -67,7 +83,6 @@ public class PeerRunner implements Runnable {
         out.writeObject("known peers?");
         return (String) in.readObject();
     }
-
 
     public String sendItsMe(Socket socket) throws IOException, ClassNotFoundException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
@@ -92,25 +107,32 @@ public class PeerRunner implements Runnable {
         throw new FileNotFoundException("Couldn't find the file [" + fileName + "]");
     }
 
-    public byte[] sendDownload(String fileName, int bounces) throws IOException, ClassNotFoundException {
+    public long sendDownload(String fileName, int bounces) throws IOException, ClassNotFoundException {
         Peer peer = sendFindFile(fileName, bounces);
         Socket socket = new Socket(peer.getAddress(), peer.getPort());
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
         out.writeObject(String.format("download? %s", fileName));
-        int size = in.readInt();
+        long size = in.readLong();
 
-        System.out.println("Size: " + size);
+        byte[] data = new byte[2048];
+        BufferedOutputStream bos = downloadsManager.getAsOutStream(fileName);
+        int read, total;
+        read = in.read(data, 0, data.length);
+        bos.write(data, 0, read);
+        total = read;
 
-        byte[] file = new byte[size];
-
-        for (int i = 0; i < size; i++) {
-            file[i] = (byte) in.read();
+        while (read > -1 && total < size) {
+            read = in.read(data, 0, data.length);
+            if(read > -1)
+            {
+                bos.write(data, 0, read);
+                total += read;
+            }
         }
 
-        downloadsManager.writeFile(fileName, file);
-
-        return file;
+        bos.flush();
+        return size;
     }
 
     public String sendBye(Socket socket) throws IOException, ClassNotFoundException {
@@ -118,18 +140,6 @@ public class PeerRunner implements Runnable {
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
         out.writeObject(String.format("bye! %s", this.name));
         return (String) in.readObject();
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public UUID getPeerId() {
-        return peerId;
-    }
-
-    public int getPort() {
-        return port;
     }
 
     public String getName() {
@@ -142,9 +152,5 @@ public class PeerRunner implements Runnable {
 
     public FileManager getFilesManager() {
         return filesManager;
-    }
-
-    public FileManager getDownloadsManager() {
-        return downloadsManager;
     }
 }
