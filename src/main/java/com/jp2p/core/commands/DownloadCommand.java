@@ -4,7 +4,7 @@ import com.jp2p.core.file.FileManager;
 
 import java.io.*;
 
-public record DownloadCommand(FileManager fileManager) implements ICommand{
+public record DownloadCommand(FileManager fileManager) implements ICommand {
     @Override
     public Object execute(Object... args) {
         String fileName = (String)args[0];

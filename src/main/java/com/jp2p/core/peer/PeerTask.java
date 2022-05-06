@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+@SuppressWarnings("InfiniteLoopStatement")
 public class PeerTask implements Runnable {
     private final Socket client;
     private final PeerRunner me;
@@ -49,15 +50,17 @@ public class PeerTask implements Runnable {
 
     @Override
     public void run() {
+        ObjectInputStream in;
+        ObjectOutputStream out;
         try {
+             in = new ObjectInputStream(client.getInputStream());
+             out = new ObjectOutputStream(client.getOutputStream());
+
             while (true) {
-                ObjectInputStream in = new ObjectInputStream(client.getInputStream());
-                ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
                 String command = (String) in.readObject();
                 handleCommand(command, out);
             }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException | ClassNotFoundException ignored) {
         }
     }
 
@@ -67,7 +70,7 @@ public class PeerTask implements Runnable {
             case "it's me" -> out.writeObject(commandExecutor.executeCommand(CommandType.ITS_ME, args.getValue()[0], args.getValue()[1], args.getValue()[2]));
             case "known peers" -> out.writeObject(commandExecutor.executeCommand(CommandType.KNOWN_PEERS));
             case "name" -> out.writeObject(commandExecutor.executeCommand(CommandType.NAME));
-            case "file" -> out.writeObject(commandExecutor.executeCommand(CommandType.FILE, args.getValue()[0], args.getValue()[1]));
+            case "file" -> commandExecutor.executeCommand(CommandType.FILE, args.getValue()[0], args.getValue()[1], args.getValue()[2], args.getValue()[3]);
             case "download" -> commandExecutor.executeCommand(CommandType.DOWNLOAD, args.getValue()[0], out);
             case "bye" -> out.writeObject(commandExecutor.executeCommand(CommandType.BYE, args.getValue()[0]));
         }

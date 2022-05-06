@@ -5,12 +5,16 @@ import com.jp2p.core.exceptions.PeerOverflowException;
 import java.util.ArrayList;
 
 public class PeerContainer {
-    private int maxPeers;
+    private final int maxPeers;
     private final ArrayList<Peer> peers;
 
     public PeerContainer(int maxPeers) {
         this.maxPeers = maxPeers;
         this.peers = new ArrayList<>();
+    }
+
+    public Peer getPeer(String name) {
+        return peers.stream().filter(p -> p.getName().equals(name)).findFirst().orElse(null);
     }
 
     public boolean addPeer(Peer peer) throws PeerOverflowException {
@@ -28,20 +32,7 @@ public class PeerContainer {
     }
 
     public void removePeer(String name) {
-        for(Peer p : peers) {
-            if(p.getName().equals(name)) {
-                peers.remove(p);
-                return;
-            }
-        }
-    }
-
-    public void setMaxPeers(int maxPeers) {
-        this.maxPeers = maxPeers;
-    }
-
-    public int getMaxPeers() {
-        return maxPeers;
+        peers.stream().filter(p -> p.getName().equals(name)).findFirst().ifPresent(peers::remove);
     }
 
     public ArrayList<Peer> getPeers() {
