@@ -4,10 +4,14 @@ import com.jp2p.core.file.FolderManger;
 
 import java.io.*;
 
+/**
+ * The command to download a file from a remote peer.
+ * The implementation of the download message.
+ */
 public record DownloadCommand(FolderManger fileManager) implements ICommand {
     @Override
     public Object execute(Object... args) {
-        String fileName = (String)args[0];
+        String fileName = (String) args[0];
         ObjectOutputStream out = (ObjectOutputStream) args[1];
 
         try {
@@ -25,7 +29,7 @@ public record DownloadCommand(FolderManger fileManager) implements ICommand {
             }
 
             stream.close();
-        } catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             return "File not found";
         } catch (IOException e) {
             return "Error reading file";

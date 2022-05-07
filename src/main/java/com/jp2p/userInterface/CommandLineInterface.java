@@ -11,13 +11,16 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * This class is a simple command line interface to interact with the system.
+ */
 @SuppressWarnings("InfiniteLoopStatement")
 public class CommandLineInterface {
     public static PeerRunner peer;
 
     public static void main(String[] args) {
         try {
-            peer = PeerRunner.Startup();
+            peer = PeerRunner.startUp();
             new Thread(peer).start();
             Thread.sleep(500);
         } catch (IOException | InterruptedException e) {
@@ -26,6 +29,10 @@ public class CommandLineInterface {
         runCommandLineInterface();
     }
 
+    /**
+     * This method is the main loop of the command line interface.
+     * Reads a command, executes it and repeats.
+     */
     private static void runCommandLineInterface() {
         printHelp();
         while (true) {
@@ -39,6 +46,13 @@ public class CommandLineInterface {
         }
     }
 
+    /**
+     * This method invokes the command specified by the user by calling the relevant method of the {@link PeerRunner}.
+     *
+     * @param command The command to be invoked.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of a serialized object cannot be found.
+     */
     private static void invokeCommand(String command) throws IOException, ClassNotFoundException {
         String[] args = command.split(" ");
         try {
@@ -106,7 +120,7 @@ public class CommandLineInterface {
                     System.out.print("Enter the ID of the file you want to download (or -1 to cancel): ");
                     int index = new Scanner(System.in).nextInt();
 
-                    if(index == -1) {
+                    if (index == -1) {
                         System.out.println("Canceling...");
                         return;
                     }
@@ -129,6 +143,9 @@ public class CommandLineInterface {
         }
     }
 
+    /**
+     * Prints the list of commands available to the user.
+     */
     private static void printHelp() {
         System.out.println("""
                 List of commands (type help to see it again or clear to clear the console):

@@ -4,6 +4,10 @@ import com.jp2p.core.exceptions.PeerOverflowException;
 import com.jp2p.core.peer.Peer;
 import com.jp2p.core.peer.PeerContainer;
 
+/**
+ * The command to tell a peer in the network to add you to their list of peers.
+ * The implementation of the "It's Me" message.
+ */
 public record ItsMeCommand(PeerContainer peerContainer) implements ICommand {
 
     @Override

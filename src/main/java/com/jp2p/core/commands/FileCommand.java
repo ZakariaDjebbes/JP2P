@@ -7,6 +7,10 @@ import java.io.File;
 import java.net.Socket;
 import java.util.ArrayList;
 
+/**
+ * The command to look for a file in the network of peers.
+ * The implementation of the file message.
+ */
 public record FileCommand(PeerRunner peerRunner) implements ICommand {
     @Override
     public Object execute(Object... args) {
@@ -19,7 +23,7 @@ public record FileCommand(PeerRunner peerRunner) implements ICommand {
             if (bounces > 0) {
                 ArrayList<File> files = peerRunner.getFilesFolderManager().getFiles(fileName);
 
-                if(!files.isEmpty()) {
+                if (!files.isEmpty()) {
                     peerRunner.sendVoila(new Socket(outputAddress, outputPort), files);
                     return "done";
                 }

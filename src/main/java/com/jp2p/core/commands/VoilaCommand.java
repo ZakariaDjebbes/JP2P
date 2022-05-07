@@ -3,6 +3,10 @@ package com.jp2p.core.commands;
 import com.jp2p.core.file.FileManager;
 import com.jp2p.core.file.PeerFile;
 
+/**
+ * The command to add a file and the peer that has it to the list of files discovered in the network (To be downloaded later).
+ * The implementation of the voila message.
+ */
 public record VoilaCommand(FileManager fileManager) implements ICommand {
     @Override
     public Object execute(Object... args) {

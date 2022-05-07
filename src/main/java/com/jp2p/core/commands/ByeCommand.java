@@ -6,6 +6,11 @@ import com.jp2p.core.peer.PeerRunner;
 import java.io.IOException;
 import java.net.Socket;
 
+
+/**
+ * The command to close the connection with the peer, meaning removing the peer from the list of peers.
+ * The implementation of the bye message.
+ */
 public record ByeCommand(PeerRunner peerRunner) implements ICommand {
     @Override
     public Object execute(Object... args) {
