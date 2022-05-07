@@ -2,7 +2,7 @@
   "default_peer": {
     "port": 45673,
     "max_peers": 10,
-    "name": "myPeer",
+    "name": "default_peer",
     "file_message_timeout_millis": "5000"
   }
 }

@@ -23,29 +23,12 @@ public class PeerTask implements Runnable {
 
     private void addCommands() {
         commandExecutor.addCommand(CommandType.NAME, args -> me.getName());
-        commandExecutor.addCommand(CommandType.KNOWN_PEERS, args -> {
-            StringBuilder builder = new StringBuilder();
-
-            for (Peer p : me.getPeerContainer().getPeers()) {
-                builder.append(String.format("%s %s %s\n", p.getName(), p.getAddress(), p.getPort()));
-            }
-
-            return builder.toString();
-        });
+        commandExecutor.addCommand(CommandType.KNOWN_PEERS, new KnownPeersCommand(me.getPeerContainer()));
         commandExecutor.addCommand(CommandType.ITS_ME, new ItsMeCommand(me.getPeerContainer()));
         commandExecutor.addCommand(CommandType.FILE, new FileCommand(me));
-        commandExecutor.addCommand(CommandType.DOWNLOAD, new DownloadCommand(me.getFilesManager()));
-        commandExecutor.addCommand(CommandType.BYE, args -> {
-            me.getPeerContainer().removePeer((String) args[0]);
-            for (Peer p : me.getPeerContainer().getPeers()) {
-                try {
-                    me.sendBye(new Socket(p.getAddress(), p.getPort()));
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-            return "Bye";
-        });
+        commandExecutor.addCommand(CommandType.DOWNLOAD, new DownloadCommand(me.getFilesFolderManager()));
+        commandExecutor.addCommand(CommandType.VOILA, new VoilaCommand(me.getFilesFoundManager()));
+        commandExecutor.addCommand(CommandType.BYE, new ByeCommand(me));
     }
 
     @Override
@@ -72,6 +55,7 @@ public class PeerTask implements Runnable {
             case "name" -> out.writeObject(commandExecutor.executeCommand(CommandType.NAME));
             case "file" -> commandExecutor.executeCommand(CommandType.FILE, args.getValue()[0], args.getValue()[1], args.getValue()[2], args.getValue()[3]);
             case "download" -> commandExecutor.executeCommand(CommandType.DOWNLOAD, args.getValue()[0], out);
+            case "voila" -> commandExecutor.executeCommand(CommandType.VOILA, args.getValue());
             case "bye" -> out.writeObject(commandExecutor.executeCommand(CommandType.BYE, args.getValue()[0]));
         }
     }

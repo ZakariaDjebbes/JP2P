@@ -1,15 +1,11 @@
 package com.jp2p.core.commands;
 
 import com.jp2p.core.exceptions.NoKnownPeersException;
-import com.jp2p.core.peer.Peer;
 import com.jp2p.core.peer.PeerRunner;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
 
 public record FileCommand(PeerRunner peerRunner) implements ICommand {
     @Override
@@ -20,22 +16,17 @@ public record FileCommand(PeerRunner peerRunner) implements ICommand {
         String outputAddress = (String) args[3];
 
         try {
-            ObjectOutputStream out = new ObjectOutputStream(new Socket(outputAddress, outputPort).getOutputStream());
-
             if (bounces > 0) {
-                for (File file : peerRunner.getFilesManager().getFiles()) {
-                    if (file.getName().equals(fileName)) {
-                        out.writeObject("voila " + peerRunner.getName());
-                        out.flush();
-                        return "done";
-                    }
+                ArrayList<File> files = peerRunner.getFilesFolderManager().getFiles(fileName);
+
+                if(!files.isEmpty()) {
+                    peerRunner.sendVoila(new Socket(outputAddress, outputPort), files);
+                    return "done";
                 }
 
                 bounces--;
                 peerRunner.sendFindFile(fileName, bounces);
             } else {
-                out.writeObject("not found");
-                out.flush();
                 return "failed";
             }
         } catch (Exception | NoKnownPeersException ignored) {

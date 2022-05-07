@@ -1,10 +1,10 @@
 package com.jp2p.core.commands;
 
-import com.jp2p.core.file.FileManager;
+import com.jp2p.core.file.FolderManger;
 
 import java.io.*;
 
-public record DownloadCommand(FileManager fileManager) implements ICommand {
+public record DownloadCommand(FolderManger fileManager) implements ICommand {
     @Override
     public Object execute(Object... args) {
         String fileName = (String)args[0];

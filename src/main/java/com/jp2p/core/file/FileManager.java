@@ -1,58 +1,30 @@
 package com.jp2p.core.file;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class FileManager {
-    private String path;
-    private File[] files;
+    private final ArrayList<PeerFile> filesFound;
 
-    public FileManager(String path) {
-        this.path = path;
-        lookupFiles();
+    public FileManager() {
+        filesFound = new ArrayList<>();
     }
 
-    public void lookupFiles() {
-        File curDir = new File(path);
-
-        try {
-            Files.createDirectories(Paths.get(path));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        files = curDir.listFiles();
-    }
-
-    public BufferedInputStream getAsInStream(String fileName) throws FileNotFoundException {
-        return new BufferedInputStream(new FileInputStream(path + fileName));
-    }
-
-    public BufferedOutputStream getAsOutStream(String fileName) throws FileNotFoundException {
-        return new BufferedOutputStream(new FileOutputStream(path + fileName));
-    }
-
-    public File getFile(String fileName) throws FileNotFoundException {
-        for (File f : files) {
-            if (f.getName().equals(fileName)) {
-                return f;
+    public void addFile(PeerFile file) {
+        for (PeerFile f : filesFound) {
+            // Prevent duplicates
+            if (f.getFileName().equals(file.getFileName()) && f.getPeerName().equals(file.getPeerName())) {
+                return;
             }
         }
 
-        throw new FileNotFoundException("File not found: " + fileName);
+        filesFound.add(file);
     }
 
-    public File[] getFiles() {
-        return files;
+    public PeerFile getPeerNameAt(int index) {
+        return filesFound.get(index);
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-        lookupFiles();
+    public ArrayList<PeerFile> getFilesFound() {
+        return filesFound;
     }
 }

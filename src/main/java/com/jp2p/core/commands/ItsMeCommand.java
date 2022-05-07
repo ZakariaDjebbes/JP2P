@@ -9,9 +9,9 @@ public record ItsMeCommand(PeerContainer peerContainer) implements ICommand {
     @Override
     public String execute(Object... args) {
         try {
-            return peerContainer.addPeer(new Peer((String) args[0], (String) args[1], Integer.parseInt((String) args[2]))) ? "done" : "this peer is already in the list";
+            return peerContainer.addPeer(new Peer((String) args[0], (String) args[1], Integer.parseInt((String) args[2]))) ? "Successfully added to the list of peers, Welcome!" : "This peer is already in the list of peers.";
         } catch (PeerOverflowException e) {
-            return "error, peer list full";
+            return "The list of peers is full.";
         }
     }
 }
