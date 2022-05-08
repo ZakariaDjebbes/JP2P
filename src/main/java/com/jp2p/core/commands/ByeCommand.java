@@ -14,7 +14,7 @@ import java.net.Socket;
 public record ByeCommand(PeerRunner peerRunner) implements ICommand {
     @Override
     public Object execute(Object... args) {
-        peerRunner.getPeerContainer().removePeer((String) args[0]);
+        boolean deleted = peerRunner.getPeerContainer().removePeer((String) args[0]);
         for (Peer p : peerRunner.getPeerContainer().getPeers()) {
             try {
                 peerRunner.sendBye(new Socket(p.getAddress(), p.getPort()));
@@ -22,6 +22,6 @@ public record ByeCommand(PeerRunner peerRunner) implements ICommand {
                 e.printStackTrace();
             }
         }
-        return "Successfully disconnected. Bye!";
+        return deleted ? "Successfully disconnected. Bye!" : "You are not in my list of known peers!";
     }
 }

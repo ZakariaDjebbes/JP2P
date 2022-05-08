@@ -34,8 +34,9 @@ public class FolderManger {
 
     /**
      * Looks up the {@link File}s in the folder and adds them to the list of {@link FolderManger#files}.
+     * This method is synchronized to avoid concurrent access to the list of {@link FolderManger#files}.
      */
-    public void lookupFiles() {
+    public synchronized void lookupFiles() {
         File curDir = new File(path);
 
         try {
@@ -71,11 +72,12 @@ public class FolderManger {
 
     /**
      * Returns the list of {@link File}s in the folder that match a search criteria.
+     * This method is synchronized to avoid concurrent access to the list of {@link FolderManger#files}.
      *
      * @param match The search criteria.
      * @return The list of {@link File}s in the folder that match the search criteria.
      */
-    public ArrayList<File> getFiles(String match) {
+    public synchronized ArrayList<File> getFiles(String match) {
         ArrayList<File> res = new ArrayList<>();
 
         for (File file : files) {
@@ -89,12 +91,13 @@ public class FolderManger {
 
     /**
      * Returns the {@link File}s in the folder that match the exact same name passed.
+     * This method is synchronized to avoid concurrent access to the list of {@link FolderManger#files}.
      *
      * @param fileName The name of the file to search.
      * @return The {@link File}s in the folder that match the exact same name passed.
      * @throws FileNotFoundException If the file is not found in the folder.
      */
-    public File getFile(String fileName) throws FileNotFoundException {
+    public synchronized File getFile(String fileName) throws FileNotFoundException {
         for (File f : files) {
             if (f.getName().equals(fileName)) {
                 return f;

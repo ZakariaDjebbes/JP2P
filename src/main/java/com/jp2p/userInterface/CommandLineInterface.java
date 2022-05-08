@@ -4,10 +4,13 @@ import com.jp2p.core.exceptions.NoKnownPeersException;
 import com.jp2p.core.exceptions.PeerNotFoundException;
 import com.jp2p.core.file.PeerFile;
 import com.jp2p.core.peer.PeerRunner;
+import com.jp2p.database.DatabaseConnection;
+import com.jp2p.database.PeerConfigurationTable;
 
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -20,13 +23,23 @@ public class CommandLineInterface {
 
     public static void main(String[] args) {
         try {
+            DatabaseConnection.connect();
+            PeerConfigurationTable.createTableIfNotExists();
+            PeerConfigurationTable.seedConfiguration();
             peer = PeerRunner.startUp();
             new Thread(peer).start();
             Thread.sleep(500);
-        } catch (IOException | InterruptedException e) {
+            runCommandLineInterface();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Error starting up the peer. Are you sure the provided port is open? \nExiting...");
+        } catch (ExceptionInInitializerError e) {
+            System.out.println("Error loading the seed file, are you sure the seed file is correctly set in resources/seed.json? \nExiting...");
+        } catch (SQLException e) {
+            System.out.println("Database connection failed. Are you sure the database file is in the right place?");
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        runCommandLineInterface();
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.jp2p.core.file;
 
+import com.jp2p.core.peer.PeerContainer;
+
 import java.util.ArrayList;
 
 /**
@@ -22,10 +24,11 @@ public class FileManager {
     /**
      * Adds a {@link PeerFile} to the list.
      * If a file with the same name and peer is already in the list, it is not added again.
+     * This method is synchronized to avoid concurrent access to the list of {@link FileManager#filesFound}.
      *
      * @param file The {@link PeerFile} to add to {@link FileManager#filesFound}.
      */
-    public void addFile(PeerFile file) {
+    public synchronized void addFile(PeerFile file) {
         for (PeerFile f : filesFound) {
             // Prevent duplicates
             if (f.getFileName().equals(file.getFileName()) && f.getPeerName().equals(file.getPeerName())) {

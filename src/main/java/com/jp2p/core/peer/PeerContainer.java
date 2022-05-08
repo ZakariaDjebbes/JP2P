@@ -42,12 +42,13 @@ public class PeerContainer {
 
     /**
      * Adds the given {@link Peer} to the list of known {@link PeerContainer#peers}.
+     * This method is synchronized to avoid concurrent access to the list of {@link PeerContainer#peers}.
      *
      * @param peer The {@link Peer} to add to {@link PeerContainer#peers}.
      * @return True if the {@link Peer} was added, false otherwise (Meaning a peer with the same name already exists).
      * @throws PeerOverflowException If the number of known {@link Peer}s exceeds {@link PeerContainer#maxPeers}.
      */
-    public boolean addPeer(Peer peer) throws PeerOverflowException {
+    public synchronized boolean addPeer(Peer peer) throws PeerOverflowException {
         if (peers.size() == maxPeers)
             throw new PeerOverflowException("Peer overflow");
 
@@ -63,11 +64,13 @@ public class PeerContainer {
 
     /**
      * Removes a {@link Peer} from the list of known {@link PeerContainer#peers} given its name.
+     * This method is synchronized to avoid concurrent access to the list of {@link PeerContainer#peers}.
      *
      * @param name The name of the {@link Peer} to remove.
+     * @return True if the {@link Peer} with the given name was removed, false otherwise.
      */
-    public void removePeer(String name) {
-        peers.stream().filter(p -> p.getName().equals(name)).findFirst().ifPresent(peers::remove);
+    public synchronized boolean removePeer(String name) {
+        return peers.removeIf(p -> p.getName().equals(name));
     }
 
     /**

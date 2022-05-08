@@ -1,0 +1,10 @@
+{
+  "default_peer": {
+    "port": 45673,
+    "max_peers": 10,
+    "name": "default_peer"
+  },
+  "database" : {
+    "connection_string": "jdbc:sqlite:jp2p.db"
+  }
+}

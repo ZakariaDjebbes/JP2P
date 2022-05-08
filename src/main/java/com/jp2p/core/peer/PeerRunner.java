@@ -1,17 +1,18 @@
 package com.jp2p.core.peer;
 
-import com.jp2p.configuration.ConfigurationReader;
 import com.jp2p.core.exceptions.NoKnownPeersException;
 import com.jp2p.core.exceptions.PeerNotFoundException;
 import com.jp2p.core.file.FileManager;
 import com.jp2p.core.file.FolderManger;
 import com.jp2p.core.file.PeerFile;
+import com.jp2p.database.PeerConfigurationTable;
 
 import java.io.*;
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
@@ -107,11 +108,11 @@ public class PeerRunner implements Runnable {
      * @return The new {@link PeerRunner} with the default values or the values entered by the user.
      * @throws IOException If an error occurs while creating the {@link ServerSocket}.
      */
-    public static PeerRunner startUp() throws IOException {
+    public static PeerRunner startUp() throws IOException, SQLException {
         PeerRunner peer;
-        String defaultName = ConfigurationReader.GetNode("default_peer", "name");
-        int maxPeers = Integer.parseInt(ConfigurationReader.GetNode("default_peer", "max_peers"));
-        int defaultPort = Integer.parseInt(ConfigurationReader.GetNode("default_peer", "port"));
+        String defaultName = PeerConfigurationTable.getConfiguration( "default_name");
+        int maxPeers = Integer.parseInt(PeerConfigurationTable.getConfiguration( "max_peers"));
+        int defaultPort = Integer.parseInt(PeerConfigurationTable.getConfiguration("default_port"));
 
         try {
             peer = new PeerRunner(defaultName, defaultPort, maxPeers);
@@ -127,6 +128,9 @@ public class PeerRunner implements Runnable {
         return peer;
     }
 
+    /**
+     * Starts the {@link PeerRunner} and waits for connections.
+     */
     @Override
     public void run() {
         System.out.printf("Peer [%s] up and listening for other peers on port [%s]...%n", name, port);
@@ -139,6 +143,13 @@ public class PeerRunner implements Runnable {
         }
     }
 
+    /**
+     * Sends the name message to the {@link PeerRunner} at a given {@link Socket} and awaits to read its name.
+     * @param socket The {@link Socket} to send the message to.
+     * @return The name of the {@link PeerRunner}.
+     * @throws IOException If an error occurs while writing the message on the {@link ObjectOutputStream}.
+     * @throws ClassNotFoundException If an error occurs while reading the response from the {@link ObjectInputStream}.
+     */
     public String sendGetName(Socket socket) throws IOException, ClassNotFoundException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
@@ -146,6 +157,13 @@ public class PeerRunner implements Runnable {
         return (String) in.readObject();
     }
 
+    /**
+     * Sends the known peers message to the {@link PeerRunner} at a given {@link Socket} and awaits to read the list of the known peers.
+     * @param socket The {@link Socket} to send the message to.
+     * @return The list of known peers of the {@link PeerRunner}.
+     * @throws IOException If an error occurs while writing the message on the {@link ObjectOutputStream}.
+     * @throws ClassNotFoundException If an error occurs while reading the response from the {@link ObjectInputStream}.
+     */
     public String sendGetKnownPeers(Socket socket) throws IOException, ClassNotFoundException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
@@ -153,6 +171,13 @@ public class PeerRunner implements Runnable {
         return (String) in.readObject();
     }
 
+    /**
+     * Sends the it's me message to the {@link PeerRunner} at a given {@link Socket} and awaits to read the response.
+     * @param socket The {@link Socket} to send the message to.
+     * @return The response from the {@link PeerRunner}. The result tells if the peer was added to the list of known peers or there was an error.
+     * @throws IOException If an error occurs while writing the message on the {@link ObjectOutputStream}.
+     * @throws ClassNotFoundException If an error occurs while reading the response from the {@link ObjectInputStream}.
+     */
     public String sendItsMe(Socket socket) throws IOException, ClassNotFoundException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
@@ -160,9 +185,17 @@ public class PeerRunner implements Runnable {
         return (String) in.readObject();
     }
 
+    /**
+     * Sends the file message to the {@link PeerRunner} at a given {@link Socket}. Unlike other messages, this message is asynchronous and doesn't wait for a response
+     * Responses to this message are handled by the voila message.
+     * @param fileName The search criteria to search for.
+     * @param bounces The number of bounces to the known peers of known peers.
+     * @throws IOException If an error occurs while writing the message on the {@link ObjectOutputStream}.
+     * @throws NoKnownPeersException  If no known peers are available.
+     */
     public void sendFindFile(String fileName, int bounces) throws IOException, NoKnownPeersException {
         if (this.peerContainer.getPeers().size() == 0)
-            throw new NoKnownPeersException("No known peers to search for file.");
+            throw new NoKnownPeersException("No known peers to search for a file.");
 
         for (Peer p : this.peerContainer.getPeers()) {
             Socket socket = new Socket(p.getAddress(), p.getPort());
@@ -171,6 +204,14 @@ public class PeerRunner implements Runnable {
         }
     }
 
+    /**
+     * Sends the download message to the {@link PeerRunner} at a given {@link Socket}.
+     * Reads the total number of bytes to be downloaded, then reads and saves them on the {@link PeerRunner#downloadsFolderManager}.
+     * @param index The index of the file to download in the {@link PeerRunner#filesFoundManager}.
+     * @return The total amount of bytes that have been downloaded.
+     * @throws IOException If an error occurs while writing the message on the {@link ObjectOutputStream}.
+     * @throws PeerNotFoundException If the peer is not found.
+     */
     public long sendDownload(int index) throws IOException, PeerNotFoundException {
         PeerFile peerFile = filesFoundManager.getPeerNameAt(index);
         Peer peer = peerContainer.getPeer(peerFile.getPeerName());
@@ -205,6 +246,13 @@ public class PeerRunner implements Runnable {
         return size;
     }
 
+    /**
+     * Sends the voila message to the {@link PeerRunner} at a given {@link Socket}. The message is sent whenever the file message finds at least one file that matches the search criteria.
+     * The message is always in this format: "voila! <peer name> <number of files found> <file name 1> <file name 2>...".
+     * @param socket The {@link Socket} to send the message to.
+     * @param files The list of files that were found through the file message.
+     * @throws IOException If an error occurs while writing the message on the {@link ObjectOutputStream}.
+     */
     public void sendVoila(Socket socket, ArrayList<File> files) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         StringBuilder builder = new StringBuilder();
@@ -218,6 +266,13 @@ public class PeerRunner implements Runnable {
         out.flush();
     }
 
+    /**
+     * Sends the bye message to the {@link PeerRunner} at a given {@link Socket}. Awaits the response from the peer.
+     * @param socket The {@link Socket} to send the message to.
+     * @return The response from the peer.
+     * @throws IOException If an error occurs while writing the message on the {@link ObjectOutputStream}.
+     * @throws ClassNotFoundException If an error occurs while reading the message from the {@link ObjectInputStream}.
+     */
     public String sendBye(Socket socket) throws IOException, ClassNotFoundException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
