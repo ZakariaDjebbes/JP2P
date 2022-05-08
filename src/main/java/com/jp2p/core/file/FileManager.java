@@ -39,18 +39,22 @@ public class FileManager {
 
     /**
      * Returns the {@link PeerFile} at the given index in the {@link FileManager#filesFound}.
+     * This method is synchronized to avoid concurrent access to the list of {@link FileManager#filesFound}.
      *
      * @param index The index of the {@link PeerFile} to return.
      * @return The {@link PeerFile} at the given index in the {@link FileManager#filesFound}.
      */
-    public PeerFile getPeerNameAt(int index) {
+    public synchronized PeerFile getPeerNameAt(int index) {
         return filesFound.get(index);
     }
 
     /**
+     * Returns the list of {@link PeerFile}s.
+     * This method is synchronized to avoid concurrent access to the list of {@link FileManager#filesFound}.
+     *
      * @return The list of {@link PeerFile}s in {@link FileManager}.
      */
-    public ArrayList<PeerFile> getFilesFound() {
+    public synchronized ArrayList<PeerFile> getFilesFound() {
         return filesFound;
     }
 }

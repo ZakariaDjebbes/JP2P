@@ -32,11 +32,12 @@ public class PeerContainer {
 
     /**
      * Returns the {@link Peer} with the given name.
+     * This method is synchronized to avoid concurrent access to the list of {@link PeerContainer#peers}.
      *
      * @param name The name of the {@link Peer} to return.
      * @return The {@link Peer} with the given name.
      */
-    public Peer getPeer(String name) {
+    public synchronized Peer getPeer(String name) {
         return peers.stream().filter(p -> p.getName().equals(name)).findFirst().orElse(null);
     }
 
@@ -74,9 +75,11 @@ public class PeerContainer {
     }
 
     /**
+     * Returns the list of known {@link Peer}s.
+     * This method is synchronized to avoid concurrent access to the list of {@link PeerContainer#peers}.
      * @return The list of known {@link Peer}s.
      */
-    public ArrayList<Peer> getPeers() {
+    public synchronized ArrayList<Peer> getPeers() {
         return peers;
     }
 }
