@@ -62,7 +62,7 @@ public class PeerTask implements Runnable {
     /**
      * Runs the task.
      * Receives the messages from the client and executes the commands.
-     * All commands received should follow the following format: <command>(!|?) <arg1> <arg2> <arg3>...
+     * All commands received should follow the following format: [command](!|?) [arg1] [arg2] [arg3]...
      */
     @Override
     public void run() {
@@ -82,7 +82,7 @@ public class PeerTask implements Runnable {
 
     /**
      * Handles the command received from the client. It will execute the command using the {@link CommandExecutor} and send the result back to the client if required.
-     * All commands received should follow the following format: <command>(!|?) <arg1> <arg2> <arg3>...
+     * All commands received should follow the following format: [command](!|?) [arg1] [arg2] [arg3]...
      *
      * @param command The command received from the client.
      * @param out     The {@link ObjectOutputStream} that will be used to send the result back to the client.
@@ -105,7 +105,7 @@ public class PeerTask implements Runnable {
     /**
      * Splits the command the received from the client into the command and the arguments.
      * The characters "!" and "?" are used to split the command and the arguments.
-     * All commands received should follow the following format: <command>(!|?) <arg1> <arg2> <arg3>...
+     * All commands received should follow the following format: [command](!|?) [arg1] [arg2] [arg3]...
      *
      * @param command The command received from the client.
      * @return A {@link Pair} containing the command and the arguments.

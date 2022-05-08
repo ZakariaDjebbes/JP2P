@@ -7,7 +7,7 @@ import java.io.*;
 /**
  * The command to download a file from a remote peer.
  * The implementation of the download message.
- * The message received is in this format: download <file name> <skip bytes>
+ * The message received is in this format: download [file name] [skip bytes]
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public record DownloadCommand(FolderManger fileManager) implements ICommand {

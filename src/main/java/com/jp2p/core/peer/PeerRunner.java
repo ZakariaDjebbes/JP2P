@@ -215,7 +215,7 @@ public class PeerRunner implements Runnable {
      * Otherwise, the download will start from the beginning.
      * This is done by sending the last successfully downloaded byte to the {@link PeerRunner}, the {@link PeerRunner} will skip the first byte and starts sending bytes from that point.
      * This ensures that if the connection is lost at some point, the download will resume instead of start over.
-     * The message is in this format: download? <file name> <skip bytes>
+     * The message is in this format: download? [file name] [skip bytes]
      *
      * @param index The index of the file to download in the {@link PeerRunner#filesFoundManager}.
      * @return true if the file was completely downloaded, false otherwise.
@@ -274,7 +274,7 @@ public class PeerRunner implements Runnable {
 
     /**
      * Sends the voila message to the {@link PeerRunner} at a given {@link Socket}. The message is sent whenever the file message finds at least one file that matches the search criteria.
-     * The message is always in this format: "voila! <peer name> <number of files found> <file name 1> <file size1> <file name 2> <file size2>...".
+     * The message is always in this format: "voila! [peer name] [number of files found] [file name 1] [file size1] [file name 2] [file size2]...".
      *
      * @param socket The {@link Socket} to send the message to.
      * @param files  The list of files that were found through the file message.
@@ -309,6 +309,7 @@ public class PeerRunner implements Runnable {
     }
 
     /**
+     * Returns the name of the peer.
      * @return the name of the peer.
      */
     public String getName() {
@@ -316,6 +317,7 @@ public class PeerRunner implements Runnable {
     }
 
     /**
+     * Returns the {@link PeerRunner#peerContainer} of the peer.
      * @return the {@link PeerContainer} that is used to store the list of known peers of this peer.
      */
     public PeerContainer getPeerContainer() {
@@ -323,6 +325,7 @@ public class PeerRunner implements Runnable {
     }
 
     /**
+     * Returns the {@link PeerRunner#filesFolderManager} of the peer.
      * @return the {@link FolderManger} that is used to store the list of files that are shared by this peer.
      */
     public FolderManger getFilesFolderManager() {
@@ -330,6 +333,7 @@ public class PeerRunner implements Runnable {
     }
 
     /**
+     * Returns the {@link PeerRunner#filesFoundManager} of the peer.
      * @return the {@link FileManager} that is used to store the list of files discovered by this peer.
      */
     public FileManager getFilesFoundManager() {

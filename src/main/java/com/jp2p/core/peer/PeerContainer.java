@@ -77,6 +77,7 @@ public class PeerContainer {
     /**
      * Returns the list of known {@link Peer}s.
      * This method is synchronized to avoid concurrent access to the list of {@link PeerContainer#peers}.
+     *
      * @return The list of known {@link Peer}s.
      */
     public synchronized ArrayList<Peer> getPeers() {

@@ -33,6 +33,8 @@ public class Peer {
     }
 
     /**
+     * Returns the name of the peer.
+     *
      * @return The name of the peer.
      */
     public String getName() {
@@ -49,6 +51,8 @@ public class Peer {
     }
 
     /**
+     * Returns the IP address of the peer.
+     *
      * @return The IP address of the peer.
      */
     public String getAddress() {
@@ -65,6 +69,8 @@ public class Peer {
     }
 
     /**
+     * Returns the port of the peer.
+     *
      * @return The port of the peer.
      */
     public int getPort() {
