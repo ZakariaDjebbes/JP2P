@@ -18,6 +18,7 @@ public class DatabaseConnection {
 
     /**
      * This method is used to create a connection to the database.
+     *
      * @return The connection to the database.
      * @throws SQLException If there is an error connecting to the database.
      */
@@ -29,6 +30,7 @@ public class DatabaseConnection {
 
     /**
      * This method is used to close the connection to the database.
+     *
      * @throws SQLException If there is an error closing the connection.
      */
     public static void close() throws SQLException {
@@ -38,6 +40,7 @@ public class DatabaseConnection {
 
     /**
      * This method is used to get the connection to the database, tries to connect if not already connected.
+     *
      * @return The connection to the database.
      * @throws SQLException If there is an error connecting to the database.
      */

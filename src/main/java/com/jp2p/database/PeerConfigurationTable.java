@@ -13,6 +13,7 @@ import java.sql.Statement;
 public class PeerConfigurationTable {
     /**
      * This method is used to crate the PEER_CONFIGURATION table if it does not exist.
+     *
      * @throws SQLException if the table could not be created.
      */
     public static void createTableIfNotExists() throws SQLException {
@@ -27,10 +28,11 @@ public class PeerConfigurationTable {
 
     /**
      * This method is used to seed the PEER_CONFIGURATION table with the seed.json file.
+     *
      * @throws SQLException if the table could not be seeded.
      */
     public static void seedConfiguration() throws SQLException {
-        if(!isTableEmpty()) {
+        if (!isTableEmpty()) {
             System.out.println("Configuration table is already seeded, skipping seed...");
             return;
         }
@@ -48,6 +50,7 @@ public class PeerConfigurationTable {
 
     /**
      * This method is used to get the value of a configuration parameter from the database given its name.
+     *
      * @param name the name of the configuration parameter.
      * @return the value of the configuration parameter.
      * @throws SQLException if the value could not be retrieved.
@@ -61,6 +64,7 @@ public class PeerConfigurationTable {
 
     /**
      * This method is used to check if the PEER_CONFIGURATION table is empty.
+     *
      * @return true if the table is empty, false otherwise.
      * @throws SQLException if the table could not be checked.
      */

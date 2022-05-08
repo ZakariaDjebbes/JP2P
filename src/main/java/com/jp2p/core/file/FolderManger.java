@@ -66,8 +66,8 @@ public class FolderManger {
      * @return A {@link BufferedOutputStream} of the file to write.
      * @throws FileNotFoundException If the file is not found in the folder.
      */
-    public BufferedOutputStream getAsOutStream(String fileName) throws FileNotFoundException {
-        return new BufferedOutputStream(new FileOutputStream(path + fileName));
+    public BufferedOutputStream getAsOutStream(String fileName, boolean append) throws FileNotFoundException {
+        return new BufferedOutputStream(new FileOutputStream(path + fileName, append));
     }
 
     /**

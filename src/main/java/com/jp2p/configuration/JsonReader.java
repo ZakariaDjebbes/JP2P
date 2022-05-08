@@ -26,12 +26,14 @@ public class JsonReader {
 
     /**
      * The Gson object to read the json file.
+     *
      * @see Gson
      */
     private static final Gson gson = new Gson();
 
     /**
      * The body of the json file.
+     *
      * @see JsonObject
      * @see Gson
      */
@@ -39,6 +41,7 @@ public class JsonReader {
 
     /**
      * Get the value of a key in the json file.
+     *
      * @param root The root of the json object.
      * @param node The node to get the value of.
      * @return The value of the node.

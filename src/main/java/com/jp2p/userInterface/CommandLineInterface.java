@@ -125,9 +125,14 @@ public class CommandLineInterface {
 
                     StringBuilder builder = new StringBuilder();
                     builder.append(String.format("Found %s files:\n", files.size()));
-                    builder.append("ID \t File name \t Peer \t Was Downloaded \n");
+                    builder.append("\tID\t \tFile Name\t \tFile Size\t \tPeer Name\t \tDownloaded\t \n");
                     for (int i = 0; i < files.size(); i++) {
-                        builder.append(String.format("%s. \t%s \t%s \t%s \n", i, files.get(i).getFileName(), files.get(i).getPeerName(), files.get(i).wasDownloaded() ? "Yes" : "No"));
+                        builder.append(String.format("\t%s.\t \t%s\t \t%09d\t \t%s\t \t%s\t \n",
+                                i,
+                                files.get(i).getFileName(),
+                                files.get(i).getFileSize(),
+                                files.get(i).getPeerName(),
+                                files.get(i).getWasDownloaded() ? "Yes" : "No"));
                     }
                     System.out.println(builder);
                     System.out.print("Enter the ID of the file you want to download (or -1 to cancel): ");
@@ -139,8 +144,12 @@ public class CommandLineInterface {
                     }
 
                     System.out.println("Downloading file...");
-                    long res = peer.sendDownload(index);
-                    System.out.printf("Downloaded %s bytes and saved them.%n\n", res);
+                    if (peer.sendDownload(index))
+                        System.out.printf("Downloaded %s bytes and saved them.%n\n", files.get(index).getFileSize());
+                    else
+                        System.out.printf("Download failed. Downloaded a total of %s bytes when expecting %s bytes.\n",
+                                files.get(index).getDownloadedSize(),
+                                files.get(index).getFileSize());
                 }
 
                 default -> System.out.println("Unknown command. Type help to see the list of commands.");
@@ -150,7 +159,7 @@ public class CommandLineInterface {
         } catch (NoKnownPeersException e) {
             System.out.println("This Peer doesn't know any other peer for now. Add peers first.");
         } catch (ConnectException | PeerNotFoundException e) {
-            System.out.println("You are trying to interact with a peer that is no longer connected to the network.");
+            System.out.println("You are trying to interact with a peer that is not connected to the network.");
         } catch (IOException e) {
             System.out.println("An error occurred while interacting with the network. Are you sure the peer is still connected?");
         }

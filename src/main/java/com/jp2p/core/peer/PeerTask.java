@@ -12,7 +12,7 @@ import java.net.Socket;
  * This is a slave of the {@link PeerRunner} class.
  * This class is responsible for handling the new connections and handle the messages / protocols of the system.
  */
-@SuppressWarnings("InfiniteLoopStatement")
+@SuppressWarnings({"InfiniteLoopStatement"})
 public class PeerTask implements Runnable {
     /**
      * The socket of the connection.
@@ -96,8 +96,8 @@ public class PeerTask implements Runnable {
             case "known peers" -> out.writeObject(commandExecutor.executeCommand(CommandType.KNOWN_PEERS));
             case "name" -> out.writeObject(commandExecutor.executeCommand(CommandType.NAME));
             case "file" -> commandExecutor.executeCommand(CommandType.FILE, args.getValue()[0], args.getValue()[1], args.getValue()[2], args.getValue()[3]);
-            case "download" -> commandExecutor.executeCommand(CommandType.DOWNLOAD, args.getValue()[0], out);
-            case "voila" -> commandExecutor.executeCommand(CommandType.VOILA, args.getValue());
+            case "download" -> commandExecutor.executeCommand(CommandType.DOWNLOAD, args.getValue()[0], args.getValue()[1], out);
+            case "voila" -> commandExecutor.executeCommand(CommandType.VOILA, (Object[]) args.getValue());
             case "bye" -> out.writeObject(commandExecutor.executeCommand(CommandType.BYE, args.getValue()[0]));
         }
     }

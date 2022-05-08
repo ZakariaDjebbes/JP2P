@@ -1,7 +1,5 @@
 package com.jp2p.core.file;
 
-import com.jp2p.core.peer.PeerContainer;
-
 import java.util.ArrayList;
 
 /**

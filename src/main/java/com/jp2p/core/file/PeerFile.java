@@ -21,14 +21,27 @@ public class PeerFile {
     private boolean wasDownloaded;
 
     /**
+     * The size of the file in bytes.
+     */
+    private final int fileSize;
+
+    /**
+     * The number of bytes downloaded by the peer following a download command.
+     */
+    private int downloadedSize;
+
+    /**
      * Constructs a new {@link PeerFile}.
      *
      * @param peerName The name of the peer that has the discovered file.
      * @param fileName The name of the discovered file.
+     * @param fileSize The size of the file in bytes.
      */
-    public PeerFile(String peerName, String fileName) {
+    public PeerFile(String peerName, String fileName, int fileSize) {
         this.peerName = peerName;
         this.fileName = fileName;
+        this.fileSize = fileSize;
+        this.downloadedSize = 0;
         this.wasDownloaded = false;
     }
 
@@ -55,7 +68,7 @@ public class PeerFile {
      *
      * @return True if the file was downloaded by the peer, false otherwise.
      */
-    public boolean wasDownloaded() {
+    public boolean getWasDownloaded() {
         return wasDownloaded;
     }
 
@@ -64,7 +77,34 @@ public class PeerFile {
      *
      * @param wasDownloaded True if the file was downloaded by the peer, false otherwise.
      */
-    public void setDownloaded(boolean wasDownloaded) {
+    public void setWasDownloaded(boolean wasDownloaded) {
         this.wasDownloaded = wasDownloaded;
+    }
+
+    /**
+     * A getter for the size of the file in bytes.
+     *
+     * @return The size of the file in bytes.
+     */
+    public long getFileSize() {
+        return fileSize;
+    }
+
+    /**
+     * Sets the number of bytes downloaded by the peer following a download command.
+     *
+     * @param downloadedSize The number of bytes downloaded by the peer following a download command.
+     */
+    public void setDownloadedSize(int downloadedSize) {
+        this.downloadedSize = downloadedSize;
+    }
+
+    /**
+     * A getter for the number of bytes downloaded by the peer following a download command.
+     *
+     * @return The number of bytes downloaded by the peer following a download command.
+     */
+    public int getDownloadedSize() {
+        return downloadedSize;
     }
 }

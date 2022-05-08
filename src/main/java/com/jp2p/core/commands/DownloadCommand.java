@@ -7,12 +7,15 @@ import java.io.*;
 /**
  * The command to download a file from a remote peer.
  * The implementation of the download message.
+ * The message received is in this format: download <file name> <skip bytes>
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public record DownloadCommand(FolderManger fileManager) implements ICommand {
     @Override
     public Object execute(Object... args) {
         String fileName = (String) args[0];
-        ObjectOutputStream out = (ObjectOutputStream) args[1];
+        int skipBytes = Integer.parseInt((String) args[1]);
+        ObjectOutputStream out = (ObjectOutputStream) args[2];
 
         try {
             File file = fileManager.getFile(fileName);
@@ -20,6 +23,7 @@ public record DownloadCommand(FolderManger fileManager) implements ICommand {
             out.flush();
 
             BufferedInputStream stream = fileManager.getAsInStream(fileName);
+            stream.skip(skipBytes);
             int read;
             byte[] bytes = new byte[2048];
 
