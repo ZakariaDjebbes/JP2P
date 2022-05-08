@@ -49,7 +49,7 @@ public class CommandLineInterface {
     private static void runCommandLineInterface() {
         printHelp();
         while (true) {
-            System.out.printf("%s>", peer.getName());
+            System.out.printf("%s>", peer.getPeer().getName());
             String userCommand = new Scanner(System.in).nextLine();
             try {
                 invokeCommand(userCommand);

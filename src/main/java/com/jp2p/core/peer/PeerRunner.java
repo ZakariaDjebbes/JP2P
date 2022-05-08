@@ -26,6 +26,11 @@ import java.util.concurrent.Executors;
 @SuppressWarnings("InfiniteLoopStatement")
 public class PeerRunner implements Runnable {
     /**
+     * This peer's informations. Meaning, the informations about myself in the system.
+     */
+    private final Peer me;
+
+    /**
      * The path to the peer's folder that contains the files shared in the network.
      */
     public static final String PEER_FILE_PATH = "./files/";
@@ -41,11 +46,6 @@ public class PeerRunner implements Runnable {
     public static final int MAX_THREADS = 10;
 
     /**
-     * The port that the peer will be listening on.
-     */
-    private final int port;
-
-    /**
      * The {@link ServerSocket} that will be used to listen for connections.
      */
     private final ServerSocket server;
@@ -54,11 +54,6 @@ public class PeerRunner implements Runnable {
      * The {@link ExecutorService} that will be used to execute the slaves.
      */
     private final ExecutorService slavePool;
-
-    /**
-     * The name of the peer.
-     */
-    private final String name;
 
     /**
      * The {@link PeerContainer} that will be used to store and interact with the list of known peers of this peer.
@@ -92,8 +87,7 @@ public class PeerRunner implements Runnable {
      * @throws IOException If an error occurs while creating the {@link ServerSocket}.
      */
     private PeerRunner(String name, int port, int maxPeers) throws IOException {
-        this.name = name;
-        this.port = port;
+        this.me = new Peer(name, port);
         this.peerContainer = new PeerContainer(maxPeers);
         this.filesFolderManager = new FolderManger(PEER_FILE_PATH);
         this.downloadsFolderManager = new FolderManger(PEER_DOWNLOADS_PATH);
@@ -133,7 +127,7 @@ public class PeerRunner implements Runnable {
      */
     @Override
     public void run() {
-        System.out.printf("Peer [%s] up and listening for other peers on port [%s]...%n", name, port);
+        System.out.printf("Peer [%s] up and listening for other peers on port [%s]...%n", me.getName(), me.getPort());
         try {
             while (true) {
                 this.slavePool.execute(new PeerTask(server.accept(), this));
@@ -184,7 +178,7 @@ public class PeerRunner implements Runnable {
     public String sendItsMe(Socket socket) throws IOException, ClassNotFoundException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-        out.writeObject(String.format("it's me! %s %s %s", this.name, Inet4Address.getLocalHost().getHostAddress(), this.port));
+        out.writeObject(String.format("it's me! %s %s %s", this.me.getName(), this.me.getAddress(), this.me.getPort()));
         return (String) in.readObject();
     }
 
@@ -283,7 +277,7 @@ public class PeerRunner implements Runnable {
     public void sendVoila(Socket socket, ArrayList<File> files) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         StringBuilder builder = new StringBuilder();
-        builder.append("voila! ").append(name).append(" ").append(files.size());
+        builder.append("voila! ").append(this.me.getName()).append(" ").append(files.size());
 
         for (File file : files) {
             builder.append(" ").append(file.getName()).append(" ").append(file.length());
@@ -304,20 +298,23 @@ public class PeerRunner implements Runnable {
     public String sendBye(Socket socket) throws IOException, ClassNotFoundException {
         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-        out.writeObject(String.format("bye! %s", this.name));
+        out.writeObject(String.format("bye! %s", this.me.getName()));
         return (String) in.readObject();
     }
 
+
     /**
-     * Returns the name of the peer.
-     * @return the name of the peer.
+     * Returns the {@link Peer} of this {@link PeerRunner}.
+     *
+     * @return The {@link Peer} of this {@link PeerRunner}.
      */
-    public String getName() {
-        return name;
+    public Peer getPeer() {
+        return this.me;
     }
 
     /**
      * Returns the {@link PeerRunner#peerContainer} of the peer.
+     *
      * @return the {@link PeerContainer} that is used to store the list of known peers of this peer.
      */
     public PeerContainer getPeerContainer() {
@@ -326,6 +323,7 @@ public class PeerRunner implements Runnable {
 
     /**
      * Returns the {@link PeerRunner#filesFolderManager} of the peer.
+     *
      * @return the {@link FolderManger} that is used to store the list of files that are shared by this peer.
      */
     public FolderManger getFilesFolderManager() {
@@ -334,6 +332,7 @@ public class PeerRunner implements Runnable {
 
     /**
      * Returns the {@link PeerRunner#filesFoundManager} of the peer.
+     *
      * @return the {@link FileManager} that is used to store the list of files discovered by this peer.
      */
     public FileManager getFilesFoundManager() {

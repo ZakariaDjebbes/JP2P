@@ -50,7 +50,7 @@ public class PeerTask implements Runnable {
      * @see ICommand
      */
     private void addCommands() {
-        commandExecutor.addCommand(CommandType.NAME, args -> me.getName());
+        commandExecutor.addCommand(CommandType.NAME, args -> me.getPeer().getName());
         commandExecutor.addCommand(CommandType.KNOWN_PEERS, new KnownPeersCommand(me.getPeerContainer()));
         commandExecutor.addCommand(CommandType.ITS_ME, new ItsMeCommand(me.getPeerContainer()));
         commandExecutor.addCommand(CommandType.FILE, new FileCommand(me));

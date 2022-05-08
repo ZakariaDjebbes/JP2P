@@ -1,5 +1,8 @@
 package com.jp2p.core.peer;
 
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
+
 /**
  * Represents a peer in the network. Stores the peer's name, IP address, and port.
  */
@@ -30,6 +33,19 @@ public class Peer {
         this.name = name;
         this.address = address;
         this.port = port;
+    }
+
+    /**
+     * Creates a new peer with the given name and port at the localhost address.
+     *
+     * @param name The name of the peer.
+     * @param port The port of the peer.
+     * @throws UnknownHostException If the localhost address cannot be found.
+     */
+    public Peer(String name, int port) throws UnknownHostException {
+        this.name = name;
+        this.port = port;
+        this.address = Inet4Address.getLocalHost().getHostAddress();
     }
 
     /**
